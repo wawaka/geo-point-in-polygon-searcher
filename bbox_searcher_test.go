@@ -12,6 +12,8 @@ const testPointsMax = 1000000
 
 var testPoints [][]float64
 
+var _ PointInPolygonSearcher = NewBoundingBoxOptimizedSearcher() // assert interface contract
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < testPointsMax; i++ {
