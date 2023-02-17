@@ -4,8 +4,10 @@ go 1.19
 
 require (
 	github.com/engelsjk/polygol v0.0.3
+	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551
 	github.com/kellydunn/golang-geo v0.7.0
 	github.com/stretchr/testify v1.8.1
+	github.com/uber/h3-go/v4 v4.0.1
 )
 
 require (

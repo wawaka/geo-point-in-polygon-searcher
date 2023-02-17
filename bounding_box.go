@@ -30,3 +30,11 @@ func (bb *BoundingBox) Contains(p []float64) bool {
 		return false
 	}
 }
+
+func (bb *BoundingBox) Min() []float64 {
+	return bb.MinMax[0:2]
+}
+
+func (bb *BoundingBox) Max() []float64 {
+	return bb.MinMax[2:4]
+}

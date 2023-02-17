@@ -41,6 +41,10 @@ func NewBoundingBoxOptimizedSearcher() *BoundingBoxOptimizedSearcher {
 	return s
 }
 
+func (s *BoundingBoxOptimizedSearcher) AddRing(id uint32, ring [][]float64) error {
+	return s.AddMultiPolygon(id, [][][][]float64{{ring}})
+}
+
 func (s *BoundingBoxOptimizedSearcher) AddMultiPolygon(id uint32, multipolygon [][][][]float64) error {
 	mpwb, found := s.MultiPolygonsMap[id]
 	if found {

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/engelsjk/polygol"
+	"github.com/golang/geo/s2"
 )
 
 func init() {
@@ -12,16 +13,22 @@ func init() {
 }
 
 func GeneratePoint() []float64 {
-	return []float64{rand.Float64(), rand.Float64()}
+	return []float64{
+		rand.Float64(),
+		rand.Float64(),
+	}
+}
+
+func RandRange(min, max float64) float64 {
+	return rand.Float64()*(max-min) + min
 }
 
 func GenerateTriangle() [][]float64 {
-	polygon := [][]float64{}
-	for i := 0; i < 3; i++ {
-		point := GeneratePoint()
-		polygon = append(polygon, point)
+	return [][]float64{
+		GeneratePoint(),
+		GeneratePoint(),
+		GeneratePoint(),
 	}
-	return polygon
 }
 
 func GeneratePolygon(n int) [][]float64 {
@@ -36,12 +43,43 @@ func GeneratePolygon(n int) [][]float64 {
 		}
 		for _, polygon := range multipolygon {
 			for _, ring := range polygon {
-				if len(ring) >= n {
-					return ring
+				if len(ring) > n {
+					return ring[:len(ring)-1]
 				}
 			}
 		}
 		// fmt.Printf("%d polygons, %d rings, %d points\n", len(multipolygon), len(multipolygon[0]), len(multipolygon[0][0]))
 	}
-	return multipolygon[0][0]
+	ring := multipolygon[0][0]
+	// fmt.Printf("%d %v\n", len(polygon), polygon)
+	ring = ring[:len(ring)-1]
+	// fmt.Printf("%d %v\n", len(polygon), polygon)
+	return ring
+}
+
+func S2Point(ll []float64) s2.Point {
+	s2ll := s2.LatLngFromDegrees(ll[0], ll[1])
+	s2point := s2.PointFromLatLng(s2ll)
+	return s2point
+}
+
+func S2Loop(ring [][]float64) *s2.Loop {
+	var s2points []s2.Point
+	for _, ll := range ring {
+		s2point := S2Point(ll)
+		s2points = append(s2points, s2point)
+	}
+	s2loop := s2.LoopFromPoints(s2points)
+	if s2loop.TurningAngle() < 0 {
+		s2loop.Invert()
+	}
+	return s2loop
+}
+
+func S2Polygon(ring [][]float64) *s2.Polygon {
+	s2loop := S2Loop(ring)
+	var s2loops []*s2.Loop
+	s2loops = append(s2loops, s2loop)
+	s2polygon := s2.PolygonFromLoops(s2loops)
+	return s2polygon
 }

@@ -1,6 +1,7 @@
 package searcher
 
 import (
+	"fmt"
 	"testing"
 
 	geo "github.com/kellydunn/golang-geo"
@@ -18,6 +19,13 @@ var testContainsConvertedPoints []*geo.Point
 func init() {
 	for i := 0; i < testContainsPolygonsMax; i++ {
 		polygon := GeneratePolygon(10)
+		// if !reflect.DeepEqual(polygon[0], polygon[len(polygon)-1]) {
+		// 	panic("oops")
+		// }
+		// polygon = polygon[0 : len(polygon)-1]
+		// if reflect.DeepEqual(polygon[0], polygon[len(polygon)-1]) {
+		// 	panic("oops2")
+		// }
 		testContainsPolygons = append(testContainsPolygons, polygon)
 		testContainsConvertedPolygons = append(testContainsConvertedPolygons, ConvertPolygon(polygon))
 	}
@@ -49,6 +57,47 @@ func TestPolygonContainsEquivalence(t *testing.T) {
 		}
 	}
 }
+
+func TestPolygonContainsEquivalenceS2(t *testing.T) {
+	C := map[string]int{}
+	for pol_idx := 0; pol_idx < 1000; pol_idx++ {
+		s2polygon := S2Polygon(testContainsPolygons[pol_idx%testContainsPolygonsMax])
+		for pt_idx := 0; pt_idx < 1000; pt_idx++ {
+			s2point := S2Point(testContainsPoints[pt_idx%testContainsPointsMax])
+			contains := PolygonContains(testContainsPolygons[pol_idx%testContainsPolygonsMax], testContainsPoints[pt_idx%testContainsPointsMax])
+			s2_contains := s2polygon.ContainsPoint(s2point)
+			if contains == s2_contains {
+				C["match"]++
+				// fmt.Println(testContainsPoints[pt_idx%testContainsPointsMax])
+			} else {
+				C[fmt.Sprintf("mismatch-%v/%v", contains, s2_contains)]++
+				// jsonPoints, _ := json.Marshal(testContainsPolygons[pol_idx%testContainsPolygonsMax])
+				// jsonPoint, _ := json.Marshal(testContainsPoints[pt_idx%testContainsPointsMax])
+				// fmt.Printf("var points = %v\n", string(jsonPoints))
+				// fmt.Printf("var point = %v\n", string(jsonPoint))
+				// fmt.Printf("own: %v, s2: %v\n", contains, s2_contains)
+				// fmt.Println()
+				// return
+			}
+			// assert.Equal(t, s2_contains, contains, "%v", testContainsPoints[pt_idx%testContainsPointsMax])
+		}
+	}
+	// for k, v := range C {
+	// 	fmt.Printf("[%v]=%v\n", k, v)
+	// }
+}
+
+// func TestS2Basic(t *testing.T) {
+// 	// s2polygon := S2Polygon([][]float64{{0, 0}, {0.5, 0}, {0.5, 0.5}, {0, 0.5}})
+// 	s2polygon := S2Polygon([][]float64{{0, 0}, {0, 0.5}, {0.5, 0.5}, {0.5, 0}})
+// 	// fmt.Printf(s2polygon.)
+// 	for i := 0; i < 10; i++ {
+// 		point := GeneratePoint()
+// 		s2point := S2Point(point)
+// 		s2contains := s2polygon.ContainsPoint(s2point)
+// 		// fmt.Printf("%v %v\n", s2contains, point)
+// 	}
+// }
 
 func BenchmarkPolygonContains(b *testing.B) {
 	for i := 0; i < b.N; i++ {
